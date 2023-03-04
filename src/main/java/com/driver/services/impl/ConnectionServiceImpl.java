@@ -23,7 +23,49 @@ public class ConnectionServiceImpl implements ConnectionService {
     public User connect(int userId, String countryName) throws Exception{
 
         User user = userRepository2.findById(userId).get();
+        String name = countryName.toUpperCase();
 
+
+        if (user.getConnected()==true){
+            throw  new Exception("Already Connected");
+        }
+        if ((user.getOriginalCountry().getCode()).equals(CountryName.valueOf(name).toCode())){
+            return user;
+        }
+
+        int minId = Integer.MAX_VALUE;
+
+        List<ServiceProvider> serviceProviderList = user.getServiceProviderList();
+        for (ServiceProvider serviceProvider : serviceProviderList){
+            List<Country> countryList = serviceProvider.getCountryList();
+            for (Country country : countryList){
+                if (country.getCode().equals(CountryName.valueOf(name).toCode())){
+                    minId = Math.min(minId,serviceProvider.getId());
+                }
+            }
+        }
+
+        if (minId == Integer.MAX_VALUE){
+            throw new Exception("Unable to connect");
+        }
+
+        ServiceProvider serviceProvider = serviceProviderRepository2.findById(minId).get();
+        user.setConnected(true);
+        user.setMaskedIp(CountryName.valueOf(countryName).toCode()+"."+serviceProvider.getId()+"."+user.getId());
+
+        Connection connection = new Connection();
+        connection.setServiceProvider(serviceProvider);
+        connection.setUser(user);
+
+        List<Connection> userConnectionList = user.getConnectionList();
+        userConnectionList.add(connection);
+        user.setConnectionList(userConnectionList);
+
+        List<Connection> serviceConnectionList = serviceProvider.getConnectionList();
+        serviceConnectionList.add(connection);
+        serviceProvider.setConnectionList(serviceConnectionList);
+
+        userRepository2.save(user);
 
         return user;
     }
@@ -32,7 +74,14 @@ public class ConnectionServiceImpl implements ConnectionService {
 
         User user = userRepository2.findById(userId).get();
 
+        if (user.getConnected() == false){
+            throw new Exception("Already disconnected");
+        }
 
+        user.setMaskedIp(null);
+        user.setConnected(false);
+
+        userRepository2.save(user);
 
         return user;
     }
