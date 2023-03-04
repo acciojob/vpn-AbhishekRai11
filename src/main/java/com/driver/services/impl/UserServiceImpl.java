@@ -11,6 +11,8 @@ import com.driver.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -23,42 +25,47 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(String username, String password, String countryName) throws Exception{
-//        if(!caseIgnoreCheckAndEnumCheck(countryName)){
-//            throw new Exception();
-//        }
 
-        Country country = new Country();
-        country.setCountryName(CountryName.valueOf(countryName.toUpperCase()));
-        country.setCode(CountryName.valueOf(countryName.toUpperCase()).toCode());
+        try {
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(password);
 
-        User user = new User();
-        user.setPassword(password);
-        user.setUsername(username);
-        user.setOriginalCountry(country);
-        user.setConnected(false);
+            Country country = new Country();
+            String name = countryName.toUpperCase();
+            country.setCountryName(CountryName.valueOf(name));
+            country.setCode(CountryName.valueOf(name).toCode());
+            country.setUser(user);
 
-        User userFromRepo = userRepository3.save(user);
-        user.setOriginalIp(country.getCode()+"."+userFromRepo.getId());
-        return userRepository3.save(userFromRepo);
+            user.setOriginalCountry(country);
+            user.setOriginalIp(country.getCode() + "." + user.getId());
 
+            userRepository3.save(user);
+
+            return user;
+        }
+        catch (Exception e){
+            throw new Exception("User not found");
+        }
     }
 
     @Override
     public User subscribe(Integer userId, Integer serviceProviderId) {
+
         User user = userRepository3.findById(userId).get();
 
         ServiceProvider serviceProvider = serviceProviderRepository3.findById(serviceProviderId).get();
-        user.getServiceProviderList().add(serviceProvider);
 
-        return userRepository3.save(user);
-    }
+        List<ServiceProvider> serviceProviderList = user.getServiceProviderList();
+        serviceProviderList.add(serviceProvider);
+        user.setServiceProviderList(serviceProviderList);
 
-    public boolean caseIgnoreCheckAndEnumCheck(String countryName){
-        for (CountryName countryName1 : CountryName.values()) {
-            if (countryName1.name().equals(countryName)) {
-                return true;
-            }
-        }
-        return false;
+        List<User> userList = serviceProvider.getUsers();
+        userList.add(user);
+        serviceProvider.setUsers(userList);
+
+        userRepository3.save(user);
+
+        return user;
     }
 }
