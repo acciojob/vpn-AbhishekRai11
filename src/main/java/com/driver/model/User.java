@@ -83,6 +83,7 @@ public class User {
         this.connected = connected;
     }
 
+
     public Country getOriginalCountry() {
         return originalCountry;
     }
