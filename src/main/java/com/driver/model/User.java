@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "User")
 public class User {
 
     @Id
@@ -13,27 +13,24 @@ public class User {
     private int id;
 
     private String username;
-
     private String password;
-
     private String originalIp;
-
     private String maskedIp;
-
     private Boolean connected;
-
-    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
-    private Country originalCountry;
-
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<Connection> connectionList = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Connection> connectionList;
 
     @ManyToMany
-    @JoinTable(name = "user_service",joinColumns = @JoinColumn(name = "userId"),inverseJoinColumns = @JoinColumn(name = "serviceProviderId"))
-    List<ServiceProvider> serviceProviderList = new ArrayList<>();
+    @JoinColumn
+    private List<ServiceProvider> serviceProviderList;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Country originalCountry;
+
 
     public User() {
     }
+
 
     public int getId() {
         return id;
@@ -75,21 +72,12 @@ public class User {
         this.maskedIp = maskedIp;
     }
 
-    public boolean getConnected() {
+    public Boolean getConnected() {
         return connected;
     }
 
-    public void setConnected(boolean connected) {
+    public void setConnected(Boolean connected) {
         this.connected = connected;
-    }
-
-
-    public Country getOriginalCountry() {
-        return originalCountry;
-    }
-
-    public void setOriginalCountry(Country originalCountry) {
-        this.originalCountry = originalCountry;
     }
 
     public List<Connection> getConnectionList() {
@@ -106,5 +94,13 @@ public class User {
 
     public void setServiceProviderList(List<ServiceProvider> serviceProviderList) {
         this.serviceProviderList = serviceProviderList;
+    }
+
+    public Country getOriginalCountry() {
+        return originalCountry;
+    }
+
+    public void setOriginalCountry(Country originalCountry) {
+        this.originalCountry = originalCountry;
     }
 }

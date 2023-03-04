@@ -3,7 +3,7 @@ package com.driver.model;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "connections")
+@Table(name = "Connection")
 public class Connection {
 
     @Id
@@ -19,6 +19,12 @@ public class Connection {
     private User user;
 
     public Connection() {
+    }
+
+    public Connection(int id, ServiceProvider serviceProvider, User user) {
+        this.id = id;
+        this.serviceProvider = serviceProvider;
+        this.user = user;
     }
 
     public int getId() {
